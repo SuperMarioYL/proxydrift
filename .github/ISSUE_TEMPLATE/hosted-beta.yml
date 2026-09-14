@@ -1,0 +1,47 @@
+name: 托管版候补
+description: 定时双流监控（飞书/钉钉告警）的内测候补登记
+title: "hosted-beta 候补登记"
+labels: [hosted-beta]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        托管版做的是同一件事的定时版：两条流按天自动拉取、lag 对齐、背离窗口直接推飞书/钉钉告警——不用自己搭 cron。
+
+        诚实部分：托管版只在收到第二个真实从业者的自有数据回报后启动开发，候补名单本身就是需求信号。提交后我们会在 24 小时内联系你，约一次 30 分钟通话，**现场跑你自己的两条 CSV**——如果你的数据能亮旗，创始价当场成交（前 5 个团队不建任何计费系统）。
+  - type: textarea
+    id: team-context
+    attributes:
+      label: 团队与场景
+      description: 你们在跑什么 Agent 决策流？代理指标和真实结果分别是什么？
+      placeholder: 例：电商出海增长团队，投放 Agent 优化 ROAS 代理分，真实结果是 7 日留存。
+    validations:
+      required: true
+  - type: textarea
+    id: streams-status
+    attributes:
+      label: 两条流的现状
+      description: 今天两条流是否都能按天导出（proxy：date, action_id, proxy_value；outcome：date, outcome_value）？各有多长历史？
+      placeholder: 例：proxy 流可从内部日志按天导出，outcome 流在 BI 里有现成日表，各约 180 天。
+    validations:
+      required: true
+  - type: dropdown
+    id: alert-channel
+    attributes:
+      label: 期望的告警渠道
+      description: 托管版计划首发飞书/钉钉告警。
+      options:
+        - 飞书
+        - 钉钉
+        - Slack
+        - 都可以
+    validations:
+      required: true
+  - type: textarea
+    id: contact
+    attributes:
+      label: 联系方式（可选）
+      description: 不填就默认通过这个 GitHub issue 联系你。
+      placeholder: 邮箱 / 微信号（可选）
+    validations:
+      required: false

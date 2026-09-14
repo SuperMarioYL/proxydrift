@@ -507,7 +507,7 @@ def _chart_png_base64(
     import matplotlib
 
     matplotlib.use("Agg", force=True)
-    from matplotlib import dates as mdates, pyplot as plt
+    from matplotlib import pyplot as plt
 
     families = _chart_font_families(proxy_label, outcome_label)
 

@@ -1,0 +1,57 @@
+name: 审计回报
+description: 用你自己的两条数据流跑一次 ProxyDrift，把亮旗结果回报回来
+title: 用你自己的两条数据流跑一次并回报结果
+labels: [audit-report]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        这份回报直接决定这个项目接下来做什么、以及要不要继续做——v0.1 之后的新功能，要等真实的自有数据回报才动手。
+
+        还没跑过？三步：
+
+        1. `uvx proxydrift demo` —— 60 秒内置回放，看一面旗怎么亮；
+        2. `proxydrift --show-template` —— 打印两条 CSV 的输入契约；
+        3. `proxydrift audit proxy.csv outcome.csv --lag 7` —— 跑你自己的两条流。
+
+        没亮旗同样是有效回报，照填即可。旗标只是相关性线索（correlational heuristic — not a causal verdict），不是因果判定。
+  - type: textarea
+    id: proxy-stream
+    attributes:
+      label: 代理指标流（proxy stream）
+      description: 你交给 Agent 优化的指标是什么？proxy.csv（date, action_id, proxy_value 三列）从哪里导出？大概多少个决策日？
+      placeholder: 例：公众号内容 Agent，代理指标是单篇互动量，proxy.csv 从运营后台按天导出，约 90 个决策日。
+    validations:
+      required: true
+  - type: textarea
+    id: outcome-stream
+    attributes:
+      label: 真实结果流（outcome stream）
+      description: 延迟到达的真实业务结果是什么？通常延迟几天？outcome.csv（date, outcome_value 两列）从哪里来？
+      placeholder: 例：7 日关注转化，从增长仪表盘按天导出，要 7 天后才齐。
+    validations:
+      required: true
+  - type: input
+    id: lag-days
+    attributes:
+      label: 使用的 lag（天）
+      description: audit 命令里 `--lag` 用的值。
+      placeholder: "7"
+    validations:
+      required: true
+  - type: textarea
+    id: flags
+    attributes:
+      label: 亮旗结果（flags）
+      description: 亮了什么旗——窗口日期、proxy/outcome 趋势、嫌疑动作；或者明确写「一面没亮」。
+      placeholder: 例：1 面旗，窗口 2026-08-03 ~ 08-16，proxy 趋势 +0.42 σ/天、outcome 趋势 -0.31 σ/天，嫌疑动作是 stock_pitch 与标题党改写。／或直接写：一面没亮。
+    validations:
+      required: true
+  - type: textarea
+    id: report-screenshot
+    attributes:
+      label: report.html 截图
+      description: 直接把图片粘进输入框（Ctrl/Cmd + V）。数据敏感可以打码，双趋势与旗标窗口的形状留着就有用。
+      placeholder: 粘贴 report.html 的截图；敏感数字可打码（可选）。
+    validations:
+      required: false
