@@ -1,0 +1,208 @@
+{
+  "schema": 3,
+  "name": "proxydrift",
+  "github": "https://github.com/SuperMarioYL/proxydrift",
+  "palette": "auto",
+  "lang": {
+    "primary": "zh",
+    "toggle": true
+  },
+  "hero": {
+    "headline": {
+      "en": "Your agent's proxy metric is climbing. Is the real outcome?",
+      "zh": "Agent 的代理指标一路上涨，真实结果呢？"
+    },
+    "sub": {
+      "en": "ProxyDrift time-aligns your agent's decision stream with the late-arriving ground-truth outcome stream, and flags the window where the two diverge — correlational heuristic, code-stamped, never a causal verdict.",
+      "zh": "ProxyDrift 把 Agent 决策流与延迟到达的真实结果流做时间对齐 join，在背离窗口立刻亮旗——相关性启发式由代码强制盖章，绝不冒充因果结论。"
+    },
+    "href": "#quickstart"
+  },
+  "advantages": [
+    {
+      "title": {
+        "en": "Lag-aligned two-stream join",
+        "zh": "lag 对齐的双流 join"
+      },
+      "body": {
+        "en": "The agent acts on day t; the real outcome only lands at t + lag_days. ProxyDrift bucket-joins the two streams on calendar days, shifts the outcome by your lag, and never interpolates — missing outcome days surface as coverage gaps, not fabricated data.",
+        "zh": "Agent 在第 t 天做决策，真实结果要 t + lag_days 才到达。ProxyDrift 按日桶 join 两条流、按你的 lag 后移结果流，绝不插值——缺观测的决策日如实列为覆盖缺口，不造数据。"
+      }
+    },
+    {
+      "title": {
+        "en": "Three-condition divergence flags",
+        "zh": "三方条件的背离亮旗"
+      },
+      "body": {
+        "en": "A window flags only when the proxy trend climbs above +θ (σ/day, full-series normalized), the lag-aligned outcome sinks below −θ, and their correlation drops under −0.3. Adjacent windows merge; suspect actions rank by proxy mass; every flag carries the verdict label \"correlational heuristic — not a causal verdict\".",
+        "zh": "一个窗口亮旗，当且仅当：代理趋势爬过 +θ（σ/天、全序列归一）、lag 对齐后的结果沉到 −θ 以下、两者相关系数跌破 −0.3。相邻窗口自动合并；嫌疑动作按代理体量排序；每面旗都由代码盖章「correlational heuristic — not a causal verdict」。"
+      }
+    },
+    {
+      "title": {
+        "en": "Home-model audit narrative, opt-in",
+        "zh": "国产模型审计叙事（可选）"
+      },
+      "body": {
+        "en": "Set ZHIPU_API_KEY or DEEPSEEK_API_KEY and ProxyDrift asks GLM-4 / deepseek-flash to narrate the flagged window into an audit paragraph embedded in report.html. No key? It skips gracefully. The verdict label is stamped by code — the LLM never overrides it.",
+        "zh": "配置 ZHIPU_API_KEY 或 DEEPSEEK_API_KEY，ProxyDrift 会请 GLM-4 / deepseek-flash 为亮旗窗口写一段审计叙事，嵌入 report.html。没有 key 就优雅跳过。判定标签由代码盖章——LLM 永远无权改写。"
+      }
+    }
+  ],
+  "demo": {
+    "title": {
+      "en": "See it fire",
+      "zh": "看看它怎么亮旗"
+    },
+    "note": {
+      "en": "Deterministic synthetic creator-growth replay, seed 20260914 — the same run `proxydrift demo` produces on your machine.",
+      "zh": "确定性合成回放（seed 20260914）——与你本机 `proxydrift demo` 的输出逐字一致。"
+    },
+    "source": "https://github.com/SuperMarioYL/proxydrift",
+    "steps": [
+      {
+        "label": "Run the replay",
+        "body": "公众号内容 Agent 被交付「单篇互动量」，真实结果「7 日关注转化」迟到 7 天",
+        "command": "proxydrift demo --no-llm",
+        "output": "ProxyDrift 背离审计 / divergence audit\n  对齐 join        lag = 7 天/days, 已对齐决策日 joined decision days = 61\n  覆盖缺口 gaps    2 天/days\n  扫描窗口 windows 48（window = 14 天/days）\n  亮旗 flags       1\n\n  FLAG 1  2026-07-07 → 2026-08-08（33 天/days）\n    proxy 趋势 trend    +0.09 σ/day\n    outcome 趋势 trend  -0.10 σ/day\n    窗口相关 corr       -0.91\n    嫌疑动作 suspects   title_shock, topic_pileup, emoji_bait\n    判定 verdict        correlational heuristic — not a causal verdict\n报告已写入 / report written: report.html",
+        "image": "/assets/demo-flag.svg"
+      },
+      {
+        "label": "Audit your own streams",
+        "body": "两条 CSV 进，一面旗（或没有旗）出——退出码 0/1/2 可直接接 CI",
+        "command": "proxydrift audit proxy.csv outcome.csv --lag 7",
+        "output": "proxy CSV: date, action_id, proxy_value\noutcome CSV: date, outcome_value\n\nexit 0  未亮旗 no flags\nexit 1  亮旗 flags fired（report.html 已生成）\nexit 2  输入/用法错误 input or usage error",
+        "image": "/assets/demo-audit.svg"
+      }
+    ]
+  },
+  "quickstart": {
+    "title": {
+      "en": "Get started",
+      "zh": "快速开始"
+    },
+    "body": {
+      "en": "One command to see the mechanism; your own two CSVs to use it for real.",
+      "zh": "一条命令看懂机制；换上你自己的两条 CSV 就是真用。"
+    },
+    "steps": [
+      {
+        "title": {
+          "en": "Run the bundled demo",
+          "zh": "跑内置演示"
+        },
+        "code": "uvx proxydrift demo"
+      },
+      {
+        "title": {
+          "en": "Audit your two streams",
+          "zh": "审计你自己的两条流"
+        },
+        "code": "proxydrift audit proxy.csv outcome.csv --lag 7"
+      },
+      {
+        "title": {
+          "en": "Open the report",
+          "zh": "打开报告"
+        },
+        "code": "open report.html"
+      },
+      {
+        "title": {
+          "en": "Or try the shipped example",
+          "zh": "或用自带示例数据"
+        },
+        "code": "proxydrift audit examples/creator_growth_proxy.csv examples/creator_growth_outcome.csv --lag 7"
+      }
+    ]
+  },
+  "limitations": [
+    {
+      "zh": "判定永远是相关性启发式，不是因果结论——这是代码强制盖章的红线，不是免责套话。",
+      "en": "Verdicts are correlational heuristics, never causal conclusions — code-stamped, not disclaimer boilerplate."
+    },
+    {
+      "zh": "v0.1 只做离线批处理 CSV/JSONL；没有实时流接入、没有 Web 面板（报告是自包含 HTML）。",
+      "en": "v0.1 is offline batch CSV/JSONL only — no streaming ingestion, no web dashboard (the report is self-contained HTML)."
+    },
+    {
+      "zh": "硬性前提：你需要同时拥有代理决策流与可按日期 join 的延迟真实结果流；没有结果流就没有 oracle。",
+      "en": "Hard precondition: you need both a proxy decision stream and a joinable delayed ground-truth stream; no outcome stream, no oracle."
+    }
+  ],
+  "scene": {
+    "kind": "neon-graph",
+    "fallback": "/assets/scene-dark.svg",
+    "fallbackLight": "/assets/scene-light.svg"
+  },
+  "story": {
+    "intro": {
+      "title": {
+        "zh": "仪表盘一片绿，转化在悄悄掉",
+        "en": "The dashboard goes green while conversion sinks"
+      },
+      "body": {
+        "zh": "你把业务指标交给 Agent 优化，真实结果要 7 天、30 天后才从 CRM 里浮现，于是你交给它一条可即时测量的代理指标。Agent 精确地优化你交给它的东西——互动量确实在涨。问题出现在别处、也更晚：涨上来的互动是标题党和 emoji 蹭来的，真正该涨的关注转化在掉。OpenAI 在《我们如何监控内部 Coding Agents 的失配》里确认：代理改善而结果变差的 reward hacking 是生产级 Agent 真实存在的失效类别。他们的方案不出大门；ProxyDrift 回答的是你机器上的版本——指标和结果背离了吗？",
+        "en": "You hand the agent a measurable proxy because the real outcome lands 7–30 days later. The agent optimizes exactly what it was handed — interactions climb, the dashboard goes green. The problem shows up elsewhere and later: the clicks came from shock titles, and the conversion that pays the bills is sinking. OpenAI's internal monitoring write-up confirms reward hacking — proxy improving while the outcome degrades — as a real production-agent failure class. Their answer never leaves the building; ProxyDrift is the version for your own data: did the metric and the outcome diverge?"
+      }
+    },
+    "sections": [
+      {
+        "title": {
+          "zh": "盲区是结构性的",
+          "en": "The blind spot is structural"
+        },
+        "body": {
+          "zh": "eval 与可观测性面板打分的就是交给 Agent 的那条指标——回路里没有任何环节在比对代理位移和下游结果位移。等结果明显不对时，漂移往往已经复利了几周。ProxyDrift 把两条流按日桶 lag 对齐 join，缺口如实呈现，绝不插值。",
+          "en": "Eval and observability dashboards score the same metric the agent was given — nothing in the loop compares proxy movement against downstream outcome movement. By the time the numbers look wrong, the drift has compounded for weeks. ProxyDrift lag-joins the two streams on daily buckets, surfaces gaps, never interpolates."
+        },
+        "image": {
+          "light": "/assets/join-light.svg",
+          "dark": "/assets/join-dark.svg",
+          "alt": {
+            "zh": "双流 lag 对齐 join",
+            "en": "Two-stream lag-aligned join"
+          }
+        }
+      },
+      {
+        "title": {
+          "zh": "嫌疑动作，排序呈现",
+          "en": "Suspect actions, ranked"
+        },
+        "body": {
+          "zh": "亮旗窗口内，每个 action_id 按贡献的代理体量排序——title_shock、topic_pileup、emoji_bait 直接点名。自包含 HTML 报告画出双趋势线、给亮旗窗口涂上阴影带、附上嫌疑动作表；判定标签由代码盖章，LLM 叙事只能加注、不能翻案。",
+          "en": "Inside a flagged window, every action_id ranks by the proxy mass it contributed — title_shock, topic_pileup, emoji_bait, named outright. The self-contained HTML report draws the dual trend lines, shades the flagged windows, and tabulates the suspects; the verdict label is code-stamped and the LLM narrative can annotate but never override it."
+        },
+        "image": {
+          "light": "/assets/suspects-light.svg",
+          "dark": "/assets/suspects-dark.svg",
+          "alt": {
+            "zh": "嫌疑动作排序",
+            "en": "Ranked suspect actions"
+          }
+        }
+      }
+    ],
+    "details": [
+      {
+        "title": {
+          "zh": "亮旗条件可调",
+          "en": "Tunable flag conditions"
+        },
+        "body": {
+          "zh": "lag、窗口宽度、θ 阈值、相关阈值、嫌疑上限全部可以从命令行覆盖；默认 lag=7 天、window=14 天、θ=0.05、corr<−0.3。",
+          "en": "lag, window width, θ threshold, correlation threshold, and suspect cap are all CLI-overridable; defaults are lag=7d, window=14d, θ=0.05, corr<−0.3."
+        },
+        "code": "proxydrift audit proxy.csv outcome.csv \\\n  --lag 7 --window 14 --theta 0.05 \\\n  --corr-threshold -0.3 --max-suspects 3"
+      }
+    ]
+  },
+  "meta": {
+    "content_version": "1",
+    "source_version": "v0.1.0",
+    "visual_profile": "neon-particle",
+    "web_factory_ref": "03e7ec8a416f868b847d13b3023bf7d1215db767"
+  }
+}
