@@ -6,6 +6,9 @@ __pycache__/
 build/
 dist/
 
+# local audit output (proxydrift demo / audit write here by default)
+report.html
+
 # virtual environments
 .venv/
 venv/

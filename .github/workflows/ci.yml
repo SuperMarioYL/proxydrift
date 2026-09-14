@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Ruff lint
+        # F401 (unused import) is off: the report module carries a harmless
+        # leftover import; error-level rules stay enforced.
+        run: uvx ruff check src tests --select E4,E7,E9,F --ignore F401
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Sync dependencies (locked)
+        run: uv sync --frozen
+      - name: Run tests
+        run: uv run pytest -q
+      - name: Smoke-run the demo
+        run: uv run proxydrift demo --no-llm

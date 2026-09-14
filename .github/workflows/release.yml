@@ -1,0 +1,52 @@
+name: release
+
+# Builds the wheel + sdist into dist/ on every v*.*.* tag, with checksums.
+# The dist/ artifacts are uploaded as workflow artifacts; attaching them to
+# the GitHub Release is done by the publish step, not by this workflow.
+# The PyPI job is opt-in: it stays skipped until the repo variable
+# PYPI_PUBLISH == "true" AND a Trusted Publisher is registered — an
+# always-on job would fail the first release with invalid-publisher.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheel and sdist
+        run: uv build --out-dir dist
+      - name: Check version matches the tag
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          VERSION="$(cat VERSION)"
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "tag v$TAG does not match VERSION $VERSION" >&2
+            exit 1
+          fi
+      - name: Generate checksums
+        run: sha256sum dist/* > dist/checksums.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  pypi:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') && vars.PYPI_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Publish to PyPI (trusted publisher)
+        uses: pypa/gh-action-pypi-publish@release/v1
