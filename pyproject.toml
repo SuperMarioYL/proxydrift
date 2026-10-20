@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "proxydrift"
-version = "0.1.0"
+version = "0.2.0"
 description = "检测 AI Agent 代理指标与真实业务结果背离的审计工具 — audit CLI that flags agents improving the proxy while real outcomes sink"
 authors = [{ name = "SuperMarioYL", email = "leo.stack@outlook.com" }]
 license = "MIT"

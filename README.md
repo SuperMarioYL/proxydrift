@@ -245,7 +245,9 @@ v0.1 明确不做的（也是刻意冻结的）：
 
 <h2 id="roadmap"><img src="data:image/svg+xml;base64,PHN2ZwogIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICB3aWR0aD0iMjQiCiAgaGVpZ2h0PSIyNCIKICB2aWV3Qm94PSIwIDAgMjQgMjQiCiAgZmlsbD0ibm9uZSIKICBzdHJva2U9IiMyNTYzZWIiCiAgc3Ryb2tlLXdpZHRoPSIyIgogIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIKICBzdHJva2UtbGluZWpvaW49InJvdW5kIgogIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb25zLXRhYmxlci1vdXRsaW5lIGljb24tdGFibGVyLXJvdXRlIgo+CiAgPHBhdGggc3Ryb2tlPSJub25lIiBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgPHBhdGggZD0iTTMgMTlhMiAyIDAgMSAwIDQgMGEyIDIgMCAwIDAgLTQgMCIgLz4KICA8cGF0aCBkPSJNMTkgN2EyIDIgMCAxIDAgMCAtNGEyIDIgMCAwIDAgMCA0eiIgLz4KICA8cGF0aCBkPSJNMTEgMTloNS41YTMuNSAzLjUgMCAwIDAgMCAtN2gtOGEzLjUgMy41IDAgMCAxIDAgLTdoNC41IiAvPgo8L3N2Zz4=" width="22" alt="" /> 路线图 / Roadmap</h2>
 
-**v0.1.0（当前）** 已交付：两流 lag 对齐 join 引擎、窗口化背离检测、双语终端审计、自包含 HTML 报告、GLM/DeepSeek 审计叙事、内置合成回放与 36 项测试、CI 与发布工作流。
+**v0.2.0（当前）** 已交付：两个崩溃路径修复——LLM 网关返回非 JSON 200 响应时审计叙事优雅跳过（整次审计不再崩溃）、不可写的 `--report` 路径以退出码 2 干净报错（不再裸 traceback）；两条路径都有回归测试，全套 50 项测试。
+
+**v0.1.0** 已交付：两流 lag 对齐 join 引擎、窗口化背离检测、双语终端审计、自包含 HTML 报告、GLM/DeepSeek 审计叙事、内置合成回放与 36 项测试、CI 与发布工作流。
 
 **之后：刻意冻结，直到第二个从业者信号。** 下一个真实用户用自己的两条流跑出背离并回报之前，不加任何新功能——这是对「需求是否真实」的诚实测试。信号落地后优先做：
 

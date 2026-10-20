@@ -321,17 +321,23 @@ def _run_flow(
         # it.  The fallback renders correctly, so keep the terminal
         # output clean for the audit itself.
         logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
-        report_path = write_report(
-            args.report,
-            aligned,
-            flags,
-            title=args.title or DEFAULT_REPORT_TITLE,
-            proxy_label=proxy_label,
-            outcome_label=outcome_label,
-            narrative=narrative,
-            narrative_source=narrative_source,
-            window=args.window,
-        )
+        try:
+            report_path = write_report(
+                args.report,
+                aligned,
+                flags,
+                title=args.title or DEFAULT_REPORT_TITLE,
+                proxy_label=proxy_label,
+                outcome_label=outcome_label,
+                narrative=narrative,
+                narrative_source=narrative_source,
+                window=args.window,
+            )
+        except OSError as exc:
+            # An unwritable --report path is a usage error (exit 2), not a
+            # traceback — same contract as the input/validation errors above.
+            print(f"错误 error: {exc}", file=sys.stderr)
+            raise SystemExit(EXIT_ERROR) from exc
 
     print_terminal_summary(
         aligned, flags, window=args.window, report_path=report_path

@@ -245,7 +245,9 @@ The honest part: hosted-tier development starts only after the second real pract
 
 <h2 id="roadmap"><img src="data:image/svg+xml;base64,PHN2ZwogIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICB3aWR0aD0iMjQiCiAgaGVpZ2h0PSIyNCIKICB2aWV3Qm94PSIwIDAgMjQgMjQiCiAgZmlsbD0ibm9uZSIKICBzdHJva2U9IiMyNTYzZWIiCiAgc3Ryb2tlLXdpZHRoPSIyIgogIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIKICBzdHJva2UtbGluZWpvaW49InJvdW5kIgogIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb25zLXRhYmxlci1vdXRsaW5lIGljb24tdGFibGVyLXJvdXRlIgo+CiAgPHBhdGggc3Ryb2tlPSJub25lIiBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgPHBhdGggZD0iTTMgMTlhMiAyIDAgMSAwIDQgMGEyIDIgMCAwIDAgLTQgMCIgLz4KICA8cGF0aCBkPSJNMTkgN2EyIDIgMCAxIDAgMCAtNGEyIDIgMCAwIDAgMCA0eiIgLz4KICA8cGF0aCBkPSJNMTEgMTloNS41YTMuNSAzLjUgMCAwIDAgMCAtN2gtOGEzLjUgMy41IDAgMCAxIDAgLTdoNC41IiAvPgo8L3N2Zz4=" width="22" alt="" /> Roadmap</h2>
 
-**v0.1.0 (current)** shipped: the lag-aware two-stream join engine, windowed divergence detection, bilingual terminal audit, self-contained HTML report, GLM/DeepSeek audit narrative, bundled synthetic replay with 36 tests, CI and release workflows.
+**v0.2.0 (current)** shipped: two crash-path fixes — a non-JSON 200 response from the LLM gateway now degrades to a graceful narrative skip instead of crashing the audit, and an unwritable `--report` path exits cleanly with code 2 instead of a raw traceback; both paths carry regression tests (50 tests total).
+
+**v0.1.0** shipped: the lag-aware two-stream join engine, windowed divergence detection, bilingual terminal audit, self-contained HTML report, GLM/DeepSeek audit narrative, bundled synthetic replay with 36 tests, CI and release workflows.
 
 **Next: deliberately frozen until the second practitioner signal.** Until a real user runs an audit on their own two streams and reports back, no new features — that's the honest test of whether the demand is real. Once the signal lands, the priorities are:
 

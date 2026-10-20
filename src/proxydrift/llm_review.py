@@ -181,6 +181,14 @@ def request_narrative(
             f"{provider.label} 请求失败（{exc}）/ "
             f"{provider.label} request failed ({exc})"
         ) from exc
+    except ValueError as exc:
+        # json.JSONDecodeError (a ValueError) — a gateway or proxy answering
+        # 200 with a non-JSON body must degrade to a skipped narrative, not
+        # crash the audit; this mirrors the unexpected-shape branch below.
+        raise LLMReviewError(
+            f"{provider.label} 响应不是合法 JSON / "
+            f"{provider.label} returned a non-JSON body"
+        ) from exc
     try:
         content = body["choices"][0]["message"]["content"].strip()
     except (KeyError, IndexError, AttributeError, TypeError) as exc:

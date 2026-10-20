@@ -2,6 +2,22 @@
 
 本项目所有显著变更都记录在此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.2.0] - 2026-10-21
+
+崩溃路径修复版本：审计在两类异常响应/路径下不再裸崩，发布谱系回归 main。
+
+### Fixed
+
+- `llm_review`：GLM/DeepSeek 网关返回 200 但响应体不是合法 JSON（典型于代理/网关错误页）时，此前 `json.JSONDecodeError` 会直接炸穿整次审计；现在按既有契约降级为「叙事跳过」，统计审计独立成立。
+- `cli`：`--report` 指向不可写路径（只读文件系统、父路径是文件、权限不足）时，此前以裸 OSError traceback 退出；现在与输入错误同一契约——双语错误信息、退出码 2。
+- 发布谱系：v0.2.0 自 main HEAD 打标签（v0.1.0 标签之后落在 main 的站点提交一并纳入），七个版本面（VERSION、pyproject、`__version__`、CHANGELOG、双 README、uv.lock）全部锁定 0.2.0。
+
+### Added
+
+- `tests/test_llm_review.py`（9 项）与 `tests/test_cli.py`（5 项）：叙事降级契约、provider 选择、退出码契约与报告写入错误路径的回归测试；全套 36 → 50 项。
+
+[0.2.0]: https://github.com/SuperMarioYL/proxydrift/releases/tag/v0.2.0
+
 ## [0.1.0] - 2026-09-14
 
 首个公开版本：两条流的代理指标背离审计，从引擎到报告到一条命令的演示。
