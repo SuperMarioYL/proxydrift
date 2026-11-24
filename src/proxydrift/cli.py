@@ -46,6 +46,7 @@ from .report import (
     DEFAULT_PROXY_LABEL,
     DEFAULT_REPORT_TITLE,
     print_terminal_summary,
+    windows_scanned,
     write_report,
 )
 from .streams import (
@@ -291,6 +292,16 @@ def _run_flow(
         print(f"错误 error: {exc}", file=sys.stderr)
         raise SystemExit(EXIT_ERROR) from exc
 
+    if windows_scanned(aligned, args.window) == 0:
+        # No window was scanned, so "no flags" is not a measured result —
+        # fail as an input error instead of letting a CI gate pass on an
+        # audit that compared nothing.
+        print(
+            _unmeasurable_message(aligned, args.lag, args.window),
+            file=sys.stderr,
+        )
+        raise SystemExit(EXIT_ERROR)
+
     narrative = None
     narrative_source = None
     notes: list[str] = []
@@ -351,6 +362,21 @@ def _run_flow(
         if args.open:
             webbrowser.open(report_path.resolve().as_uri())
     return flags
+
+
+def _unmeasurable_message(aligned: AlignedStreams, lag: int, window: int) -> str:
+    """Bilingual explanation for a join too short to scan a single window."""
+    joined = len(aligned.pairs)
+    gaps = len(aligned.gaps)
+    return (
+        f"错误 error: 无法度量 —— lag = {lag} 天时只有 {joined} 个决策日能与结果流对齐"
+        f"（覆盖率缺口 {gaps} 天），不足窗口 {window} 天，没有扫描到任何窗口；"
+        "这不是「未亮旗」，请检查 --lag 与两条流的日期范围 / cannot measure: only "
+        f"{joined} decision days join the outcome stream at lag = {lag} d "
+        f"({gaps} coverage gaps), fewer than the window of {window} d, so no window "
+        'was scanned — this is not a "no flags" result; check --lag and both '
+        "streams' date ranges"
+    )
 
 
 def _template_text() -> str:

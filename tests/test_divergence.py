@@ -172,6 +172,24 @@ class TestParameterValidation:
             detect_divergence(monotone_divergence(), **kwargs)
 
 
+class TestNonFiniteThresholds:
+    """A non-finite threshold gates nothing: it must be an error, not a silent no-flag audit."""
+
+    def test_nan_theta_rejected(self):
+        with pytest.raises(ValueError, match="theta"):
+            detect_divergence(monotone_divergence(), theta=float("nan"))
+
+    def test_inf_theta_rejected(self):
+        with pytest.raises(ValueError, match="theta"):
+            detect_divergence(monotone_divergence(), theta=float("inf"))
+
+    def test_nan_corr_threshold_rejected(self):
+        with pytest.raises(ValueError, match="corr_threshold"):
+            detect_divergence(
+                monotone_divergence(), corr_threshold=float("nan")
+            )
+
+
 class TestBundledReplay:
     """The demo replay is a shipped contract: one planted flag, bait suspects."""
 

@@ -28,6 +28,7 @@ LLM) may alter it.
 
 from __future__ import annotations
 
+import math
 import statistics
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -106,15 +107,28 @@ def detect_divergence(
 
     Returns an empty list when the aligned join is shorter than
     ``window``.  Raises ``ValueError`` for a nonsensical parameter
-    (window < 2, theta < 0, max_suspects < 1).
+    (window < 2, a non-finite or negative theta, a non-finite
+    corr_threshold, max_suspects < 1).
     """
     if window < 2:
         raise ValueError(
             f"window 必须 >= 2（当前 {window}）/ window must be >= 2 (got {window})"
         )
+    # A NaN threshold makes every comparison False and quietly turns the
+    # whole scan into "no flags", so finiteness is the precondition the
+    # scan actually needs — ``theta < 0`` alone lets NaN through.
+    if not math.isfinite(theta):
+        raise ValueError(
+            f"theta 必须是有限数（当前 {theta}）/ theta must be finite (got {theta})"
+        )
     if theta < 0:
         raise ValueError(
             f"theta 必须 >= 0（当前 {theta}）/ theta must be >= 0 (got {theta})"
+        )
+    if not math.isfinite(corr_threshold):
+        raise ValueError(
+            f"corr_threshold 必须是有限数（当前 {corr_threshold}）/ "
+            f"corr_threshold must be finite (got {corr_threshold})"
         )
     if max_suspects < 1:
         raise ValueError(

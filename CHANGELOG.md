@@ -2,6 +2,22 @@
 
 本项目所有显著变更都记录在此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.3.0] - 2026-11-24
+
+结论可信度修复版本：没有度量过的审计不再冒充「未亮旗」，退化阈值不再静默吞掉旗标，报告版本行回到唯一事实来源。
+
+### Fixed
+
+- `cli` / `report`：对齐后的决策日不足一个 `--window`（或全部决策日都缺 `t + lag` 观测）时，此前 `detect_divergence` 返回空列表，CLI 打印「未亮旗 / no flags fired — 未发现代理上行且结果下行的反相关窗口」并以退出码 `0` 结束——那正是文档里给 CI 门禁用、表示「审计完成、没亮旗」的码。现在这条路径在写叙事与报告之前就以双语 `错误 error:` 说明「无法度量」：报出对齐决策日数、覆盖率缺口、窗口与 lag，退出码 `2`。HTML 报告的零旗卡片不再刷成绿色（`class="n good"` → 中性），「一窗未扫」改成独立的琥珀色卡片，明确写出这不是「未发现背离」的结论。
+- `divergence`：`--theta` / `--corr-threshold` 传入 `nan` / `inf` 时，此前只校验 `theta < 0`——而 `nan < 0` 为假，于是所有比较恒假、扫描静默归零，内置回放（正常亮一条旗）也会输出「亮旗 flags 0」并以 `0` 退出。现在非有限阈值按既有双语 `ValueError` 契约报错，CLI 以退出码 `2` 结束。输入层本来就拒绝非有限数字，这里补齐同一前置条件。
+- `report`：报告的版本行改读 `proxydrift.__version__`，不再查 `importlib.metadata`。此前在源码树里运行（没有 dist 元数据）会整行丢掉版本，而环境里装着旧版 `proxydrift` 时报告会被盖上旧版本号——一份报告无法自证是哪个版本产出的。
+
+### Added
+
+- `tests/test_divergence.py`（3 项）、`tests/test_cli.py`（3 项）、`tests/test_version.py`（2 项）：无法度量 / 非有限阈值 / 报告版本行的回归测试，全套 50 → 58 项。
+
+[0.3.0]: https://github.com/SuperMarioYL/proxydrift/releases/tag/v0.3.0
+
 ## [0.2.0] - 2026-10-21
 
 崩溃路径修复版本：审计在两类异常响应/路径下不再裸崩，发布谱系回归 main。

@@ -48,6 +48,16 @@
         "en": "Set ZHIPU_API_KEY or DEEPSEEK_API_KEY and ProxyDrift asks GLM-4 / deepseek-flash to narrate the flagged window into an audit paragraph embedded in report.html. No key? It skips gracefully. The verdict label is stamped by code — the LLM never overrides it.",
         "zh": "配置 ZHIPU_API_KEY 或 DEEPSEEK_API_KEY，ProxyDrift 会请 GLM-4 / deepseek-flash 为亮旗窗口写一段审计叙事，嵌入 report.html。没有 key 就优雅跳过。判定标签由代码盖章——LLM 永远无权改写。"
       }
+    },
+    {
+      "title": {
+        "en": "No measurement, no green light",
+        "zh": "没度量过，就不发绿灯"
+      },
+      "body": {
+        "en": "An audit only exits 0 when at least one window was actually scanned and none fired. If your --lag and the two streams' date ranges do not line up, the join is shorter than one window: ProxyDrift says it cannot measure, exits 2, and the report shows an amber \"no window was scanned\" card instead of a green zero-flag card. Non-finite thresholds are rejected the same way.",
+        "zh": "只有当至少一个滚动窗口真的被扫描过、且没有亮旗时，审计才以 0 退出。如果 --lag 与两条流的日期范围对不上、对齐后的决策日不足一个窗口，ProxyDrift 会直接说「无法度量」并以 2 退出，报告的零旗卡片变成琥珀色「没有扫描到任何窗口」，而不是绿色。非有限阈值同样拒绝。"
+      }
     }
   ],
   "demo": {
@@ -72,7 +82,7 @@
         "label": "Audit your own streams",
         "body": "两条 CSV 进，一面旗（或没有旗）出——退出码 0/1/2 可直接接 CI",
         "command": "proxydrift audit proxy.csv outcome.csv --lag 7",
-        "output": "proxy CSV: date, action_id, proxy_value\noutcome CSV: date, outcome_value\n\nexit 0  未亮旗 no flags\nexit 1  亮旗 flags fired（report.html 已生成）\nexit 2  输入/用法错误 input or usage error",
+        "output": "proxy CSV: date, action_id, proxy_value\noutcome CSV: date, outcome_value\n\nexit 0  已扫描窗口、未亮旗 no flag fired\nexit 1  亮旗 flags fired（report.html 已生成）\nexit 2  输入/用法错误，或对齐不足一个窗口无法度量 input/usage error, or nothing measurable",
         "image": "/assets/demo-audit.svg"
       }
     ]
@@ -123,8 +133,8 @@
       "en": "Verdicts are correlational heuristics, never causal conclusions — code-stamped, not disclaimer boilerplate."
     },
     {
-      "zh": "v0.1 只做离线批处理 CSV/JSONL；没有实时流接入、没有 Web 面板（报告是自包含 HTML）。",
-      "en": "v0.1 is offline batch CSV/JSONL only — no streaming ingestion, no web dashboard (the report is self-contained HTML)."
+      "zh": "只做离线批处理 CSV/JSONL；没有实时流接入、没有 Web 面板（报告是自包含 HTML）。",
+      "en": "Offline batch CSV/JSONL only — no streaming ingestion, no web dashboard (the report is self-contained HTML)."
     },
     {
       "zh": "硬性前提：你需要同时拥有代理决策流与可按日期 join 的延迟真实结果流；没有结果流就没有 oracle。",
@@ -200,8 +210,8 @@
     ]
   },
   "meta": {
-    "content_version": "0.2.0",
-    "source_version": "v0.2.0",
+    "content_version": "0.3.0",
+    "source_version": "v0.3.0",
     "visual_profile": "neon-particle",
     "web_factory_ref": "03e7ec8a416f868b847d13b3023bf7d1215db767"
   }

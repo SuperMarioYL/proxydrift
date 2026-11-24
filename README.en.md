@@ -187,13 +187,13 @@ proxydrift [--version] [--show-template] {audit,demo}
 
 **`demo`** — replay the bundled synthetic loop, same options (plus `--seed`, fixed by default); the report automatically carries the replay's stream labels. A replay that fails to fire its planted flag is treated as a regression (exit code 2).
 
-**Exit codes** (usable as a CI gate):
+**Exit codes** (usable as a CI gate). `0` means a window was actually scanned and none fired; when the lag-aligned join is shorter than one `--window` (for example the `--lag` and the two streams' date ranges do not line up) the audit scans nothing and exits `2`, not `0` — an audit that measured nothing must not pass a gate:
 
 | Code | Meaning |
 | --- | --- |
-| `0` | audit completed, no flags (demo: planted flag fired as expected) |
+| `0` | audit completed, windows actually scanned, no flags (demo: planted flag fired as expected) |
 | `1` | audit completed, at least one flag fired |
-| `2` | input or usage error (schema mismatch, invalid thresholds, demo regression) |
+| `2` | input or usage error (schema mismatch, invalid thresholds, fewer joined days than one window, demo regression) |
 
 <h2 id="config"><img src="data:image/svg+xml;base64,PHN2ZwogIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICB3aWR0aD0iMjQiCiAgaGVpZ2h0PSIyNCIKICB2aWV3Qm94PSIwIDAgMjQgMjQiCiAgZmlsbD0ibm9uZSIKICBzdHJva2U9IiMyNTYzZWIiCiAgc3Ryb2tlLXdpZHRoPSIyIgogIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIKICBzdHJva2UtbGluZWpvaW49InJvdW5kIgogIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb25zLXRhYmxlci1vdXRsaW5lIGljb24tdGFibGVyLWFkanVzdG1lbnRzIgo+CiAgPHBhdGggc3Ryb2tlPSJub25lIiBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgPHBhdGggZD0iTTQgMTBhMiAyIDAgMSAwIDQgMGEyIDIgMCAwIDAgLTQgMCIgLz4KICA8cGF0aCBkPSJNNiA0djQiIC8+CiAgPHBhdGggZD0iTTYgMTJ2OCIgLz4KICA8cGF0aCBkPSJNMTAgMTZhMiAyIDAgMSAwIDQgMGEyIDIgMCAwIDAgLTQgMCIgLz4KICA8cGF0aCBkPSJNMTIgNHYxMCIgLz4KICA8cGF0aCBkPSJNMTIgMTh2MiIgLz4KICA8cGF0aCBkPSJNMTYgN2EyIDIgMCAxIDAgNCAwYTIgMiAwIDAgMCAtNCAwIiAvPgogIDxwYXRoIGQ9Ik0xOCA0djEiIC8+CiAgPHBhdGggZD0iTTE4IDl2MTEiIC8+Cjwvc3ZnPg==" width="22" alt="" /> Configuration</h2>
 
@@ -245,7 +245,9 @@ The honest part: hosted-tier development starts only after the second real pract
 
 <h2 id="roadmap"><img src="data:image/svg+xml;base64,PHN2ZwogIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICB3aWR0aD0iMjQiCiAgaGVpZ2h0PSIyNCIKICB2aWV3Qm94PSIwIDAgMjQgMjQiCiAgZmlsbD0ibm9uZSIKICBzdHJva2U9IiMyNTYzZWIiCiAgc3Ryb2tlLXdpZHRoPSIyIgogIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIKICBzdHJva2UtbGluZWpvaW49InJvdW5kIgogIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb25zLXRhYmxlci1vdXRsaW5lIGljb24tdGFibGVyLXJvdXRlIgo+CiAgPHBhdGggc3Ryb2tlPSJub25lIiBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgPHBhdGggZD0iTTMgMTlhMiAyIDAgMSAwIDQgMGEyIDIgMCAwIDAgLTQgMCIgLz4KICA8cGF0aCBkPSJNMTkgN2EyIDIgMCAxIDAgMCAtNGEyIDIgMCAwIDAgMCA0eiIgLz4KICA8cGF0aCBkPSJNMTEgMTloNS41YTMuNSAzLjUgMCAwIDAgMCAtN2gtOGEzLjUgMy41IDAgMCAxIDAgLTdoNC41IiAvPgo8L3N2Zz4=" width="22" alt="" /> Roadmap</h2>
 
-**v0.2.0 (current)** shipped: two crash-path fixes — a non-JSON 200 response from the LLM gateway now degrades to a graceful narrative skip instead of crashing the audit, and an unwritable `--report` path exits cleanly with code 2 instead of a raw traceback; both paths carry regression tests (50 tests total).
+**v0.3.0 (current)** shipped: three fixes, each reproduced before it was written down — (1) an audit whose join is shorter than one window (or whose decision days all lack an outcome observation) no longer masquerades as "no flags": it says it cannot measure and exits 2, and the HTML report no longer paints its zero-flag card green; (2) `--theta` / `--corr-threshold` set to `nan` / `inf` now fail with exit 2 instead of silently making every comparison false and printing a fake "no divergence" result; (3) the report's version line reads `proxydrift.__version__`, so a source-tree run keeps its version and an older installed distribution can no longer relabel the report. Suite 50 → 58 tests.
+
+**v0.2.0** shipped: two crash-path fixes — a non-JSON 200 response from the LLM gateway now degrades to a graceful narrative skip instead of crashing the audit, and an unwritable `--report` path exits cleanly with code 2 instead of a raw traceback; both paths carry regression tests (50 tests total).
 
 **v0.1.0** shipped: the lag-aware two-stream join engine, windowed divergence detection, bilingual terminal audit, self-contained HTML report, GLM/DeepSeek audit narrative, bundled synthetic replay with 36 tests, CI and release workflows.
 

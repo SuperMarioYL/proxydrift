@@ -184,6 +184,7 @@ def build_report_html(
     timezone).
     """
     flags = list(flags)
+    scanned = windows_scanned(aligned, window)
     generated = (
         generated_at or datetime.now().astimezone()
     ).strftime("%Y-%m-%d %H:%M %Z")
@@ -206,7 +207,7 @@ def build_report_html(
 <p class="meta">生成 generated {generated} · lag = {aligned.lag_days} 天/days · window = {window} 天/days · 代理流 proxy「{escape(proxy_label)}」· 结果流 outcome「{escape(outcome_label)}」</p>
 </header>
 <div class="stats">
-{_stats_cards_html(aligned, flags, windows_scanned(aligned, window))}
+{_stats_cards_html(aligned, flags, scanned)}
 </div>
 <section class="notice">
 <p><strong>判定声明 verdict —</strong> 所有旗标由代码强制标注为 <strong>{escape(CORRELATIONAL_VERDICT)}</strong>（{VERDICT_ZH}）。旗标指向「值得人工复核的窗口」，不是行为不当的证明，更不是因果结论。</p>
@@ -219,7 +220,7 @@ def build_report_html(
 </section>
 <section id="flags">
 <h2>背离窗口 <span class="en">divergence windows</span></h2>
-{_flags_body_html(aligned, flags)}
+{_flags_body_html(aligned, flags, scanned, window)}
 </section>
 <section id="gaps">
 <h2>覆盖率缺口 <span class="en">coverage gaps</span></h2>
@@ -281,7 +282,12 @@ def _stats_cards_html(
         (str(len(aligned.pairs)), "已对齐决策日 · joined decision days", ""),
         (f"{gap_count} 天/days", "覆盖率缺口 · coverage gaps", "bad" if gap_count else ""),
         (str(scanned), "扫描窗口 · windows scanned", ""),
-        (str(flag_count), "亮旗 · flags", "bad" if flag_count else "good"),
+        (
+            str(flag_count),
+            "亮旗 · flags",
+            # Zero flags is only good news when something was actually scanned.
+            "bad" if flag_count else ("good" if scanned else ""),
+        ),
     )
     return "\n".join(
         f'<div class="stat"><div class="n {cls}">{value}</div>'
@@ -290,19 +296,37 @@ def _stats_cards_html(
     )
 
 
-def _flags_body_html(aligned: AlignedStreams, flags: Sequence[DivergenceFlag]) -> str:
-    if not flags:
-        return (
-            '<article class="ok-card">\n<h3>未亮旗 / no flags fired</h3>\n'
-            "<p>已扫描的滚动窗口里没有同时出现「代理上行 + 结果下行 + 反相关」。"
-            "未亮旗不等于没有漂移——请复核结果流覆盖与阈值设置。</p>\n"
-            '<p class="en-line">No scanned window combined a rising proxy, a sinking '
-            "lag-aligned outcome, and anti-correlation. No flags is not proof of "
-            "alignment — re-check outcome coverage and thresholds.</p>\n</article>"
+def _flags_body_html(
+    aligned: AlignedStreams,
+    flags: Sequence[DivergenceFlag],
+    scanned: int,
+    window: int,
+) -> str:
+    if flags:
+        return "\n".join(
+            _flag_card_html(index, flag, aligned)
+            for index, flag in enumerate(flags, start=1)
         )
-    return "\n".join(
-        _flag_card_html(index, flag, aligned)
-        for index, flag in enumerate(flags, start=1)
+    if scanned == 0:
+        return (
+            '<article class="ok-card unmeasured">\n'
+            "<h3>没有扫描到任何窗口 / no window was scanned</h3>\n"
+            f"<p>对齐后的决策日只有 {len(aligned.pairs)} 天，少于窗口 {window} 天——"
+            "一次窗口都没有扫描，所以这不是「未发现背离」的结论。"
+            "请检查 --lag 与两条流的日期范围，补齐结果流后重跑。</p>\n"
+            '<p class="en-line">Only '
+            f"{len(aligned.pairs)} aligned decision days — fewer than the window of "
+            f"{window} days, so no window was scanned. This is not a &quot;no "
+            'divergence&quot; finding: check --lag and both streams\' date ranges, '
+            "then re-run.</p>\n</article>"
+        )
+    return (
+        '<article class="ok-card">\n<h3>未亮旗 / no flags fired</h3>\n'
+        "<p>已扫描的滚动窗口里没有同时出现「代理上行 + 结果下行 + 反相关」。"
+        "未亮旗不等于没有漂移——请复核结果流覆盖与阈值设置。</p>\n"
+        '<p class="en-line">No scanned window combined a rising proxy, a sinking '
+        "lag-aligned outcome, and anti-correlation. No flags is not proof of "
+        "alignment — re-check outcome coverage and thresholds.</p>\n</article>"
     )
 
 
@@ -444,13 +468,15 @@ def _narrative_html(narrative: str | None, source: str | None) -> str:
 
 
 def _version_line() -> str:
-    """Installed distribution version prefix, or '' when running from a tree."""
-    from importlib.metadata import PackageNotFoundError, version
+    """The version of the code that rendered this report.
 
-    try:
-        return f"ProxyDrift v{version('proxydrift')} · "
-    except PackageNotFoundError:
-        return ""
+    Read from the package constant, never from installed distribution
+    metadata: a source-tree run has no metadata and an older installed
+    proxydrift would mislabel the report.
+    """
+    from . import __version__
+
+    return f"ProxyDrift v{__version__} · "
 
 
 # ---------------------------------------------------------------------------
@@ -672,6 +698,8 @@ article.flag { border-left: 4px solid #f59e0b; }
 article.flag + article.flag { margin-top: 14px; }
 article h3 { margin: 0 0 12px; font-size: 15px; }
 article.ok-card h3 { color: #047857; }
+article.ok-card.unmeasured { border-left: 4px solid #f59e0b; }
+article.ok-card.unmeasured h3 { color: #b45309; }
 .flagstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
 .kv .k { display: block; color: #6b7280; font-size: 12px; }
 .kv .v { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }

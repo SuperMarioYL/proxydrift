@@ -187,13 +187,13 @@ proxydrift [--version] [--show-template] {audit,demo}
 
 **`demo`** — 重放内置合成回放，参数同上（外加 `--seed`，默认固定），报告自动带上「单篇互动量 / 7 日关注转化」标签。回放未亮旗视为回归，退出码 2。
 
-**退出码**（可在 CI 里当门禁用）：
+**退出码**（可在 CI 里当门禁用）。`0` 只表示「确实扫描过窗口而且没亮旗」；对齐后的决策日不足一个 `--window`（例如 `--lag` 与两条流的日期范围对不上）时，一次窗口都没扫描，退出码是 `2`，不是 `0`——没有度量过的审计不能当门禁放行：
 
 | 码 | 含义 |
 | --- | --- |
-| `0` | 审计完成，未亮旗（demo：植入旗标如预期亮起） |
+| `0` | 审计完成、确实扫描过窗口，未亮旗（demo：植入旗标如预期亮起） |
 | `1` | 审计完成，至少一条旗标亮起 |
-| `2` | 输入或参数错误（schema 不符、非法阈值、回放回归） |
+| `2` | 输入或参数错误（schema 不符、非法阈值、对齐不足一个窗口无法度量、回放回归） |
 
 <h2 id="config"><img src="data:image/svg+xml;base64,PHN2ZwogIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICB3aWR0aD0iMjQiCiAgaGVpZ2h0PSIyNCIKICB2aWV3Qm94PSIwIDAgMjQgMjQiCiAgZmlsbD0ibm9uZSIKICBzdHJva2U9IiMyNTYzZWIiCiAgc3Ryb2tlLXdpZHRoPSIyIgogIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIKICBzdHJva2UtbGluZWpvaW49InJvdW5kIgogIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb25zLXRhYmxlci1vdXRsaW5lIGljb24tdGFibGVyLWFkanVzdG1lbnRzIgo+CiAgPHBhdGggc3Ryb2tlPSJub25lIiBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgPHBhdGggZD0iTTQgMTBhMiAyIDAgMSAwIDQgMGEyIDIgMCAwIDAgLTQgMCIgLz4KICA8cGF0aCBkPSJNNiA0djQiIC8+CiAgPHBhdGggZD0iTTYgMTJ2OCIgLz4KICA8cGF0aCBkPSJNMTAgMTZhMiAyIDAgMSAwIDQgMGEyIDIgMCAwIDAgLTQgMCIgLz4KICA8cGF0aCBkPSJNMTIgNHYxMCIgLz4KICA8cGF0aCBkPSJNMTIgMTh2MiIgLz4KICA8cGF0aCBkPSJNMTYgN2EyIDIgMCAxIDAgNCAwYTIgMiAwIDAgMCAtNCAwIiAvPgogIDxwYXRoIGQ9Ik0xOCA0djEiIC8+CiAgPHBhdGggZD0iTTE4IDl2MTEiIC8+Cjwvc3ZnPg==" width="22" alt="" /> 配置 / Configuration</h2>
 
@@ -245,7 +245,9 @@ v0.1 明确不做的（也是刻意冻结的）：
 
 <h2 id="roadmap"><img src="data:image/svg+xml;base64,PHN2ZwogIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICB3aWR0aD0iMjQiCiAgaGVpZ2h0PSIyNCIKICB2aWV3Qm94PSIwIDAgMjQgMjQiCiAgZmlsbD0ibm9uZSIKICBzdHJva2U9IiMyNTYzZWIiCiAgc3Ryb2tlLXdpZHRoPSIyIgogIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIKICBzdHJva2UtbGluZWpvaW49InJvdW5kIgogIGNsYXNzPSJpY29uIGljb24tdGFibGVyIGljb25zLXRhYmxlci1vdXRsaW5lIGljb24tdGFibGVyLXJvdXRlIgo+CiAgPHBhdGggc3Ryb2tlPSJub25lIiBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgPHBhdGggZD0iTTMgMTlhMiAyIDAgMSAwIDQgMGEyIDIgMCAwIDAgLTQgMCIgLz4KICA8cGF0aCBkPSJNMTkgN2EyIDIgMCAxIDAgMCAtNGEyIDIgMCAwIDAgMCA0eiIgLz4KICA8cGF0aCBkPSJNMTEgMTloNS41YTMuNSAzLjUgMCAwIDAgMCAtN2gtOGEzLjUgMy41IDAgMCAxIDAgLTdoNC41IiAvPgo8L3N2Zz4=" width="22" alt="" /> 路线图 / Roadmap</h2>
 
-**v0.2.0（当前）** 已交付：两个崩溃路径修复——LLM 网关返回非 JSON 200 响应时审计叙事优雅跳过（整次审计不再崩溃）、不可写的 `--report` 路径以退出码 2 干净报错（不再裸 traceback）；两条路径都有回归测试，全套 50 项测试。
+**v0.3.0（当前）** 已交付：三个修正，全部是先复现再修——① 对齐后不足一个窗口（或全部决策日都缺结果观测）的审计不再伪装成「未亮旗」：明确报「无法度量」并以退出码 2 失败，HTML 报告的零旗卡片也不再刷成绿色；② `--theta` / `--corr-threshold` 传入 `nan` / `inf` 时直接报错退出 2，而不是静默地让所有比较恒假、输出一份「没有背离」的假结论；③ 报告的版本行改读 `proxydrift.__version__`，源码树里跑也不丢版本号、不再被环境里旧版本的安装元数据冒名。全套 50 → 58 项测试。
+
+**v0.2.0** 已交付：两个崩溃路径修复——LLM 网关返回非 JSON 200 响应时审计叙事优雅跳过（整次审计不再崩溃）、不可写的 `--report` 路径以退出码 2 干净报错（不再裸 traceback）；两条路径都有回归测试，全套 50 项测试。
 
 **v0.1.0** 已交付：两流 lag 对齐 join 引擎、窗口化背离检测、双语终端审计、自包含 HTML 报告、GLM/DeepSeek 审计叙事、内置合成回放与 36 项测试、CI 与发布工作流。
 
